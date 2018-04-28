@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-us" ng-app="app">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+
+    {% include 'base/css.html' %}
+
+    <style>
+        body {
+            font-family: BlinkMacSystemFont, Roboto, Helvetica Neue, sans-serif !important;
+            font-weight: 200;
+        }
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            width: 180px;
+            height: 100px;
+            padding: 2px;
+            font: 14px sans-serif;
+            background: #41ebf4;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            padding: 5px 5px 5px 5px;
+        }
+
+    </style>
+</head>
+
+<body ng-controller="EventFlowController">
+
+<div class="contrainer-fluid">
+      <div class="row">
+        <div class="col-md-8">
+            <svg id="event_chart" width="600" height="400"></svg>
+        </div>
+        <div class="col-md-4">
+            <svg id="pie_chart" width="300" height="300"></svg>
+        </div>
+
+          </div>
+    <div class="row">
+
+
+        <div class="col-xs-12">
+            <div>Materials</div>
+            <ul>
+                <li ng-repeat="x in ms">
+                        <span style="width: 30px;background-color: {% verbatim %}{{ x.color }}{% endverbatim %}">
+                             {% verbatim %}{{ x.color }}{% endverbatim %}
+                        </span>
+                    <span>{% verbatim %}{{ x.text }}{% endverbatim %}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.js"></script>
+{#<script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>#}
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+<script src="/static/js/event-flow/django_angular_demo.js"></script>
+
+
+</body>
+</html>

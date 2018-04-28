@@ -1,0 +1,124 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+<style>
+    {% block style %}
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            width: 180px;
+            height: 100px;
+            padding: 2px;
+            font: 14px sans-serif;
+            background: #41ebf4;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            padding: 5px 5px 5px 5px;
+        }
+
+<<<<<<< working copy
+        .pager-container{
+            margin-left:40px;
+        }
+=======
+        .center {
+            margin-top:0px;
+            border-bottom: 1px solid lightgray;
+            margin-left: 0px;
+        }
+
+>>>>>>> merge rev
+
+    {% endblock %}
+
+
+</style>
+
+
+{% block main %}
+
+
+<div ng-app="app" ng-controller="EventFlowController" class="contrainer-fluid">
+    <div class="row" id="EFC">
+        <div>
+            <h1 class="center">Event Flow Chart</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8 col-xs-offset-2">
+            <form ng-submit="filter_partid(partid)">
+                <div class="input-group">
+                    <div class="input-group-btn search-panel">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span id="search_concept">Part ID</span> <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">XX</a></li>
+                        </ul>
+                    </div>
+                    <input type="hidden" name="search_param" value="all" id="search_param">
+                    <input type="text" class="form-control" name="x" placeholder="Filter" ng-model="partid">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8">
+            <svg id="event_chart" width="600" height="600"></svg>
+            <div class="pager-container">
+                <ul uib-pagination ng-model="page.current" total-items="page.total" items-per-page="page.size" max-size="page.count" ng-change="pageChanged()" class="pagination-sm" boundary-link-numbers="true" rotate="false"></ul>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <svg id="pie_chart" width="200" height="200"></svg>
+
+            <div>
+                <h3>Materials</h3>
+                <hr/>
+                <div class="form-group">
+                    <div class="checkbox" ng-repeat="x in all_materials">
+                        <input id="checkbox{% verbatim %}{{ $index}}{% endverbatim %}" type="checkbox"
+                               ng-model="x.checked" ng-change="filter_material(x.text)">
+                        <label for="checkbox{% verbatim %}{{ $index}}{% endverbatim %}" class="filter-label">
+
+                          <span class="label"
+                                style="display: inline-block;height: 28px; width: 28px;background-color: {% verbatim %}{{ x.color }}{% endverbatim %}">
+
+                        </span>
+                            <span>{% verbatim %}{{ x.text }}{% endverbatim %}</span>
+
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+<script>
+    {% block script %}
+
+    {% endblock %}
+</script>
+
+{% block extra_script %}
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-touch.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
+    <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.min.js"></script>
+    <script src="/static/js/event-flow/event-flow-chart.js"></script>
+{% endblock %}

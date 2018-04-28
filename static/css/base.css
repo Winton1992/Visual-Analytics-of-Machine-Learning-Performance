@@ -1,0 +1,135 @@
+/*body {*/
+  /*min-width: 1170px; !important;*/
+/*}*/
+
+/* Reset the container */
+.container {
+  width: 1170px;
+  max-width: none !important;
+}
+
+/* Sidebar navigation */
+.nav-sidebar > li > a {
+  padding-right: 20px;
+  padding-left: 20px;
+  margin: 0px;
+}
+
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+  color: #fff;
+  background-color: #428bca;
+}
+
+
+
+
+
+/* Undo inline form compaction on small screens */
+.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+
+/*!**/
+ /** Main content*/
+ /**!*/
+
+/*.main {*/
+  /*padding: 20px;*/
+/*}*/
+/*.main .page-header {*/
+  /*margin-top: 0;*/
+/*}*/
+
+/*!**/
+/**Classes*/
+ /**!*/
+/*.pull-left {*/
+  /*float: left !important;*/
+/*}*/
+/*.pull-right {*/
+  /*float: right !important;*/
+/*}*/
+
+/*!* Undo inline form compaction on small screens *!*/
+
+/*.form-inline .form-control {*/
+  /*display: inline-block;*/
+  /*width: auto;*/
+  /*vertical-align: middle;*/
+/*}*/
+
+/*!* Reset the container *!*/
+/*.container {*/
+  /*width: 970px;*/
+  /*max-width: none !important;*/
+/*}*/
+
+
+.filter-label:hover {
+   cursor:pointer;
+}
+
+.pie {
+  width:200px;
+  height: 200px;
+}
+
+.page-header {
+  padding-left:-10px;
+  border-bottom: 0px;
+}
+
+#heading {
+   background-color:#2b313a;
+   margin-left: -30px;
+   margin-top:-30px;
+   border-bottom:1px solid gray;
+}
+
+
+#body {
+   margin-left: -30px;
+   background-color: #2b313a;
+}
+
+.panel-body{
+  margin-left:0px;
+  border:none;
+}
+
+a {
+  color: gray;
+  border-bottom:1px solid white;
+}
+
+a.active {
+  background-color:white;
+}
+
+div.icons:hover {
+  background-color: white;
+}
+
+.head {
+  font-size:15px;
+  margin-left:-25px;
+  border-bottom:1px solid gray;
+  border-right:1px solid gray;
+  height: 40px;
+
+}
+
+.icons {
+  text-align:center;
+}
+
+.menu {
+  text-align:center;
+}
+
+

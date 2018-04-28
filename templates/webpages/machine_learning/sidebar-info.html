@@ -1,0 +1,50 @@
+<div>
+    <h4>Information</h4>
+</div>
+<div class="row">
+    <div class="col-xs-6">
+        <h5><strong>Algorithm&nbsp;</strong><span><select id="algorithm_selector" class="pull-right"></select></span></h5>
+        <h5>Accuracy:<strong id="info-accuracy" class="pull-right" style="color: #ff0000">--%</strong></h5>
+        <h5>Data Combination:</h5>
+        <div class="checkbox">
+            <label>
+                <input id="PI" type="checkbox"> Part id
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input id="MT" type="checkbox"> Material
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input id="DI" type="checkbox" > Diameter
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input id="LN" type="checkbox" > Length
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input id="PY" type="checkbox" > Part Year
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input id="FY" type="checkbox"> Failure Year
+            </label>
+        </div>
+    </div>
+    <div class="col-xs-6">
+        <h5><strong>Partition of Training Data</strong></h5>
+        <h5>Training: <strong class="pull-right" style="color: #ff0000" >80%</strong></h5>
+        <h5>Testing: <strong class="pull-right" style="color: #ff0000" >20%</strong></h5>
+        <svg id="pie-chart"  width="165" height="165" class="pull-right"></svg>
+    </div>
+</div>
+<div>
+    <h4>Best Performance of Different Algorithm</h4>
+    <svg id="algorithm-comparison-chart"  width="375" height="200"></svg>
+</div>

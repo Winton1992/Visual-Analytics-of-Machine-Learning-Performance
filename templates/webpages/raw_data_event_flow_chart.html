@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en-us" ng-app="app">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+
+    {% include 'base/css.html' %}
+
+    <style>
+        body {
+            font-family: BlinkMacSystemFont, Roboto, Helvetica Neue, sans-serif !important;
+            font-weight: 200;
+        }
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            width: 180px;
+            height: 100px;
+            padding: 2px;
+            font: 14px sans-serif;
+            background: #41ebf4;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            padding: 5px 5px 5px 5px;
+        }
+
+    </style>
+</head>
+
+<body ng-controller="EventFlowController">
+
+<div class="contrainer-fluid">
+    <div class="row">
+        <div class="col-xs-8 col-xs-offset-2 ">
+            <h1 class="center">Event Flow Chart</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8 col-xs-offset-2">
+            <form ng-submit="filter_partid(partid)">
+                <div class="input-group">
+                    <div class="input-group-btn search-panel">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span id="search_concept">Part ID</span> <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">XX</a></li>
+                        </ul>
+                    </div>
+                    <input type="hidden" name="search_param" value="all" id="search_param">
+                    <input type="text" class="form-control" name="x" placeholder="Filter" ng-model="partid">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8">
+            <svg id="event_chart" width="600" height="400"></svg>
+        </div>
+        <div class="col-xs-4">
+            <svg id="pie_chart" width="200" height="200"></svg>
+
+            <div>
+                <h3>Materials</h3>
+                <hr/>
+                <div class="form-group">
+                    <div class="checkbox" ng-repeat="x in all_materials">
+                        <input id="checkbox{% verbatim %}{{ $index}}{% endverbatim %}" type="checkbox"
+                               ng-model="x.checked" ng-change="filter_material(x.text)">
+                        <label for="checkbox{% verbatim %}{{ $index}}{% endverbatim %}" class="filter-label">
+
+                          <span class="label"
+                                style="display: inline-block;height: 28px; width: 28px;background-color: {% verbatim %}{{ x.color }}{% endverbatim %}">
+
+                        </span>
+                            <span>{% verbatim %}{{ x.text }}{% endverbatim %}</span>
+
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+<script src="/static/js/event-flow/event-flow-chart.js"></script>
+
+
+</body>
+</html>

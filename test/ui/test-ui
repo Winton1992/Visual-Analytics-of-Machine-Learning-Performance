@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='Linux'
+else
+   platform='Mac'
+fi
+echo
+printf "%s platform detected. \n
+Checking testing dependencies..." $platform
+webdriver='not found'
+if [ "$platform" = 'Linux' ]
+then
+webdriver='https://chromedriver.storage.googleapis.com/2.30/chromedriver_linux64.zip'
+else
+webdriver='https://chromedriver.storage.googleapis.com/2.30/chromedriver_mac64.zip'
+fi
+echo $webdriver
+
+present=$(ls chromedriver)
+if [[ "$present" != 'chromedriver' ]]; then
+wget $webdriver
+unzip chromedriver_*
+rm chromedriver_*
+fi
+
+echo "driver OK"
+
+pip install selenium
+pip install behave
+
+echo "\nWait for the automated testing to complete\n"
+
+behave | cat > test.log
+python update_readme.py
+cat test.log
+

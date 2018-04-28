@@ -1,0 +1,295 @@
+<script>
+    var margin = {
+        top: 20,
+        bottom: 20,
+        left: 80,
+        right: 20
+    };
+
+    var svg = d3.select("#algorithm-accuracy-chart");
+    var chart = svg.append("g")
+        .classed("display", true)
+        .attr("transform", "translate("+ margin.left +","+ margin.top +")"); // move chart to implement margin
+
+    var sort_btn = d3.select("#btn-sort-accuracy")
+        .html("Sort data: ascending")
+        .attr("state", 0);
+
+    var w = svg.attr("width");
+    var h = svg.attr("height");
+
+    var width = w - margin.left - margin.right;
+    var height = h - margin.bottom - margin.top;
+
+    var ordinalColorScale = d3.scaleOrdinal(d3.schemeCategory20);
+
+    // Define the div for the tooltip
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+    function drawAxis(params){
+        if(params.initialize === true) {
+// Draw the gridline and axis
+            this.append("g")
+                .call(params.gridline.x)
+                .classed("gridline", true)
+                .attr("transform", "translate(0,0)");
+        }
+
+// draw x axis
+        this.append("g")						// append <g> to draw xAxis
+            .classed("x axis", true)		// set class x axis
+            .attr("transform", "translate("+ 0 +","+ height +")")	// move position
+            .call(params.axis.x)			// draw
+            .classed("x-axis-label",true);	// used for targeting x-axis-label and only update the label
+
+        // draw y axis
+        this.append("g")						// append <g> to draw yAxis
+            .classed("y axis", true)		// set class y axis
+            .attr("transform", "translate(0,0)")	// move position
+            .call(params.axis.y)							// draw
+            .classed("y-axis-label",true);
+
+        // draw x axis label
+        this.select(".x.axis")
+            .append("text")
+            .attr("x",0)
+            .attr("y",0)
+            .style("text-anchor","middle")
+            .attr("transform", "translate("+ width/2 +","+ 40 +")")
+            .text("Accuracy");
+
+        // draw y axis label
+        this.select(".y.axis")
+            .append("text")
+            .attr("x",0)
+            .attr("y",0)
+            .style("text-anchor","middle")
+            .attr("transform", "translate("+ -50 +","+ height/2 +") rotate(-90)")
+            .text("Alogrithm");
+    }
+
+    function plot(params){
+        var a = this.selectAll(".x.axis.x-axis-label");
+        this.selectAll(".x.axis.x-axis-label")
+            .data(params.data)
+            .remove();
+        this.selectAll(".y.axis.y-axis-label")
+            .data(params.data)
+            .remove();
+
+        //TODO: reset domain, when the data is updated, It need to update the data of domain
+        params.scale.x.domain([0, 100]);
+        params.scale.y.domain(params.data.map(function(entry){	// map allow you return a new array from your function pass in
+            return entry.combination;
+        }));
+
+        drawAxis.call(this, params);
+
+        // TODO:enter() phase: data bind with element
+        // TODO:In this enter phase, only need to append <rect class="bar"> no need to add any bar
+        this.selectAll(".bar") 		// prepare to binding data
+            .data(params.data)
+            .enter()              			// Set Enter Phase: let D3 know this is first time binding data
+            .append("rect")
+            .classed("bar", true); 			// let future selection be able to select all bars, classed can prevent replacement from add new class
+
+        this.selectAll(".bar-label")
+            .data(params.data)
+            .enter()
+            .append("text")
+            .classed("bar-label", true);
+
+        // TODO:update() phase: the binded element update with change of data
+        // TODO:In this update phase, update all bars
+        this.selectAll(".bar")
+            .attr("x", 0)								// set x position of bar
+            .attr("y", function(d,i){		// set y position of bar
+                return params.scale.y(d.combination);							// scaling y value
+            })
+            .attr("width", function(d,i){ // d: data to bind with currect element, i: index of data
+                return params.scale.x(d.accuracy);					// scaling x value
+            })
+            .attr("height",function(){
+                return params.scale.y.bandwidth()-1;
+            })
+            .style("fill", function(d,i){
+                return ordinalColorScale(i);
+            })
+            .on("click", function (d,i) {
+                set_checkbox(d.combination);
+                set_sidebar_info(d.accuracy);
+            })
+            .on("mouseover",function (d,i) {
+                tooltip.transition()
+                    .style("opacity", 0.99);
+
+                tooltip.html("<div>Combination: " + d.combination + "</div><div>Accuracy: " + d.accuracy + "%</div>")
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY + 10) + "px");
+            })
+            .on("mouseout", function (d) {
+                tooltip.transition()
+                    .style("opacity", 0);
+            });
+
+        this.selectAll(".bar-label")
+            .attr("x",function(d,i){
+                return params.scale.x(d.accuracy);
+            })
+            .attr("dx", -4)
+            .attr("y", function(d,i){		// set y position of bar
+                return params.scale.y(d.combination);							// scaling y value
+            })
+            .attr("dy",function(d,i){		// allow to adjust the y position
+                return params.scale.y.bandwidth()/1.5 + 2;
+            })
+            .text(function(d,i){
+                return d.accuracy;
+            });
+
+        // TODO:exit() phase: remove unbind element
+        // TODO:remove element which does not have corresponding data
+        this.selectAll(".bar")
+            .data(params.data)
+            .exit()
+            .remove();
+
+        this.selectAll(".bar-label")
+            .data(params.data)
+            .exit()
+            .remove();
+
+    }
+
+    function update_accuracy_chart_params(data, is_initialize){
+        var x = d3.scaleLinear() 	// set domain
+            .domain([0, d3.max(data, function(d){	// largest and smallest value
+                return d.accuracy;
+            })])
+            .range([0,width]);					// inplement domain from range of 0 to width
+
+        var y = d3.scaleBand() 	// set domain as ordinal scale
+            .domain(data.map(function(entry){	// map allow you return a new array from your function pass in
+                return entry.combination;
+            }))
+            .range([0,height]);					// use rangeBand to process discrete value
+
+        var xAxis = d3.axisBottom()
+            .scale(x);
+
+        var yAxis = d3.axisLeft()
+            .scale(y);
+
+        var xGridlines = d3.axisBottom()
+            .scale(x)
+            .tickSize(height,0,0)
+            .tickFormat(""); // hidden all labels
+
+        return {
+            data:data,
+            axis:{
+                x: xAxis,
+                y: yAxis
+            },
+            scale:{
+                x: x,
+                y: y
+            },
+            gridline: {
+                x: xGridlines
+            },
+            initialize: is_initialize
+        };
+    }
+
+    var endpoint = "../../api/MachineLearning/accuracy/";
+
+    $.ajax({
+        method: "GET",
+        url: endpoint,
+
+        success: function (data) {
+
+
+
+            var algorithm_data = data["mlp"];     // data for select algorithm
+
+
+            var params = update_accuracy_chart_params(algorithm_data,true);
+            console.log(algorithm_data);
+
+            plot.call(chart, params);
+
+            // Todo: Update sort button click event
+            sort_btn.on("click", function(){
+                var self = d3.select(this);
+                var ascending = function(a,b){
+                    return a.accuracy - b.accuracy;
+                };
+                var descending = function(a,b){
+                    return b.accuracy - a.accuracy;
+                };
+
+                var state = +self.attr("state");  // + read state as integer
+                var txt = "Sort data: ";
+                if(state === 0){
+                    params.data.sort(ascending);
+                    state = 1;
+                    txt += "descending";
+                }else if(state === 1){
+                    params.data.sort(descending);
+                    state = 0;
+                    txt += "ascending";
+                }
+
+                self.attr("state", state);
+                self.html(txt);
+
+                params.initialize = false;
+                plot.call(chart,params);
+            });
+
+            d3.select("#algorithm_selector").on("change",function () {
+                var selector=document.getElementById("algorithm_selector");
+                var algorithm = selector.options[selector.selectedIndex].value;
+                document.getElementById("info-algorithm").innerHTML = algorithm;
+                var algorithm_data = data[algorithm.toLowerCase()];     // data for select algorithm
+
+                var params = update_accuracy_chart_params(algorithm_data,false);
+
+                plot.call(chart,params);
+
+                // Todo: Update sort button click event
+                sort_btn.on("click", function(){
+                    var self = d3.select(this);
+                    var ascending = function(a,b){
+                        return a.accuracy - b.accuracy;
+                    };
+                    var descending = function(a,b){
+                        return b.accuracy - a.accuracy;
+                    };
+
+                    var state = +self.attr("state");  // + read state as integer
+                    var txt = "Sort data: ";
+                    if(state === 0){
+                        params.data.sort(ascending);
+                        state = 1;
+                        txt += "descending";
+                    }else if(state === 1){
+                        params.data.sort(descending);
+                        state = 0;
+                        txt += "ascending";
+                    }
+
+                    self.attr("state", state);
+                    self.html(txt);
+
+                    plot.call(chart,params);
+
+                });
+            });
+        }
+    });
+</script>

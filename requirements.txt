@@ -1,0 +1,7 @@
+Django
+django-rest-framework
+numpy
+pandas
+sklearn
+scipy
+csv2json

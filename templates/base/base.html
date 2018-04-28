@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {#    <link rel="icon" href="../../favicon.ico">#}
+
+    <title id="title">{{ title }}</title>
+
+    {% include 'base/css.html' %}
+
+    <style>
+        {% block style %}
+        {% endblock %}
+    </style>
+
+</head>
+
+<body>
+<div class="container" style="background-color:#2b313a">
+    <div class="row">
+        <div class="sidebar col-xs-2" style="padding-left: 10px; padding-right:0px;">
+            {% include 'base/sidebar.html' %}
+        </div>
+
+        <div class="col-xs-10" style="padding-top: 10px; background-color: white">
+            {% block main %}
+
+            {% endblock %}
+        </div>
+    </div>
+
+
+
+</div>
+
+
+
+{% include 'base/javascript.html' %}
+
+{% block extra_script %}
+{% endblock %}
+
+<script>
+    $(document).ready(function () {
+        {% block script %}{% endblock %}
+    })
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        var setactive = function (navId, curClass) {
+                var navId = document.getElementById(navId);
+                var links = navId.getElementsByTagName("a");
+                var currentLink = window.location.href;
+                for (var i = 0; i < links.length; i++) {
+                    var menuLink = links[i].href;
+                    //if (currentLink.indexOf(menuLink) != -1) {
+                    if(currentLink==menuLink ){
+                        links[i].className += curClass;
+                    } else {
+                        links[i].className += "";
+                    }
+                }
+            };
+
+        setactive("nav", "fa-inverse");
+    })
+</script>
+
+
+</body>
+</html>

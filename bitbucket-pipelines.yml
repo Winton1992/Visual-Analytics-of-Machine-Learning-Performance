@@ -1,0 +1,15 @@
+# COMP5615 DEPLOYMENT - AWS
+image: python:3.5.1
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - pip
+        script: # Modify the commands below to build your repository.
+          - pip install -r requirements.txt
+          - apt-get update # required to install zip
+          - apt-get install -y zip # required for packaging up the application
+          - pip install boto3==1.3.0 # required for codedeploy_deploy.py
+          - zip -r /tmp/artifact.zip * # package up the application for deployment
+          - python codedeploy_deploy.py # run the deployment script

@@ -1,0 +1,329 @@
+{% extends "base/base.html" %}
+<style>
+    {% block style %}
+
+        .axis {
+            font: 15px sans-serif;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #D4D8DA;
+            stroke-width: 2px;
+            shape-rendering: crispEdges;
+        }
+
+        .toolTip {
+            pointer-events: none;
+            position: absolute;
+            display: none;
+            min-width: 50px;
+            height: auto;
+            background: none repeat scroll 0 0 #ffffff;
+            padding: 9px 14px 6px 14px;
+            border-radius: 2px;
+            text-align: center;
+            line-height: 1.3;
+            color: #5B6770;
+            box-shadow: 0px 3px 9px rgba(0, 0, 0, .15);
+        }
+        .toolTip:after {
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 12px solid white;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            margin-left: -12px;
+        }
+        .toolTip span {
+            font-weight: 500;
+            color: #081F2C;
+        }
+
+        .center {
+            margin-top:0px;
+            border-bottom: 1px solid lightgray;
+            margin-left: 0px;
+        }
+
+    {% endblock %}
+</style>
+
+
+{% block main %}
+    <div class="row" id="EFC">
+        <div>
+            <h1 class="center">Machine Learning Result</h1>
+            <div class="pull-right"><form action="{% url 'machine-learning-result' %}" method="POST">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-default" value="Bruce-force All Combination"/>
+            </form></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-7">
+            <h4 style="position: absolute;">Accuracy Evaluation</h4>
+            <svg id="radar-chart"  width="550" height="550"></svg>
+        </div>
+        <div class="col-xs-5">
+            {#        <select id="algorithm_selector" class="pull-right"></select>#}
+
+            {#            <div>#}
+            {% include "webpages/machine_learning/sidebar-info.html" %}
+        </div>
+        {#        {% include "webpages/machine_learning/prediction.html" %}#}
+        <button type="button" id="btn-sort-accuracy" class="btn btn-default" state="0">Sort by Accuracy</button>
+        <svg id="algorithm-accuracy-chart" height=800 width=900></svg>
+    </div>
+{% endblock %}
+
+<script>
+    {% block script %}
+
+        var endpoint = "../../api/MachineLearning/accuracy/";
+
+        var radar_chart = d3.select("#radar-chart");
+        var algorithm_accuracy_bar_chart = d3.select("#algorithm-accuracy-chart");
+        var algorithm_comparison_bar_chart = d3.select("#algorithm-comparison-chart");
+
+        $.ajax({
+            method: "GET",
+            url: endpoint,
+
+            success: function (data) {
+
+                // add options in algorithm selection
+                function Update_Algorithm_selection(d) {
+                    for (var algorithm in d) {
+                        if (d.hasOwnProperty(algorithm) && algorithm !== "best_results") {
+                            d3.select("#algorithm_selector")
+                                .append("option")
+                                .attr("id", algorithm)
+                                .attr("value", algorithm)
+                                .text(algorithm)
+                        }
+                    }
+                }
+
+                Update_Algorithm_selection(data);
+
+
+
+                var algorithm_data = data["mlp"];
+
+                {# BAR CHART====================================================================== #}
+
+                var bar_chart_margin = {
+                    top: 20,
+                    bottom: 20,
+                    left: 120,
+                    right: 20
+                };
+
+                var bar_chart_width = algorithm_accuracy_bar_chart.attr("width");
+                var bar_chart_height = algorithm_accuracy_bar_chart.attr("height");
+
+                var bar_config = {
+                    width: bar_chart_width- bar_chart_margin.left - bar_chart_margin.right,
+                    height: bar_chart_height - bar_chart_margin.bottom - bar_chart_margin.top,
+                    margin: bar_chart_margin,
+                    sort_btn:"#btn-sort-accuracy"
+                };
+
+                BarChart.draw("#algorithm-accuracy-chart",algorithm_data, bar_config);
+
+                {# Algorithm Comparison BAR CHART=================================================== #}
+
+                var algorithm_comparison_bar_chart_margin = {
+                    top: 10,
+                    bottom: 30,
+                    left: 50,
+                    right: 20
+                };
+
+                var algorithm_comparison_bar_chart_width = algorithm_comparison_bar_chart.attr("width");
+                var algorithm_comparison_bar_chart_height = algorithm_comparison_bar_chart.attr("height");
+
+                var algorithm__comparison_bar_chart_config = {
+                    width: algorithm_comparison_bar_chart_width- algorithm_comparison_bar_chart_margin.left - algorithm_comparison_bar_chart_margin.right,
+                    height: algorithm_comparison_bar_chart_height - algorithm_comparison_bar_chart_margin.bottom - algorithm_comparison_bar_chart_margin.top,
+                    margin: algorithm_comparison_bar_chart_margin
+                };
+
+                var algorithm_comparison_bar_data = data["best_results"];
+
+                ComparisonBarChart.draw("#algorithm-comparison-chart",algorithm_comparison_bar_data, algorithm__comparison_bar_chart_config);
+
+                {# RADAR============================================================================#}
+                var pie_data = [algorithm_data];
+                var radar_width = radar_chart.attr("width"),
+                    radar_height = radar_chart.attr("height");
+
+                var radar_padding = 100;
+
+                // Config for the Radar chart
+                var pie_config = {
+                    w: radar_width - radar_padding,
+                    h: radar_height - radar_padding,
+                    maxValue: 100,
+                    levels: 10,
+                    TranslateX: radar_padding/2,
+                    TranslateY: radar_padding/2
+                };
+
+                RadarChart.draw("#radar-chart",  pie_data, pie_config);
+
+                {# PIE===========================================================================#}
+                var pie_data = [
+                    {name: 'Training data', percentage: 80, color: '#f4b042'},
+                    {name: 'Testing data', percentage: 20, color: '#caf441'},
+                ];
+
+                var pie_width = 150,
+                    pie_height = 150,
+                    pie_radius = 75;
+
+                var arc = d3.arc()
+                    .outerRadius(pie_radius - 10)
+                    .innerRadius(0);
+
+                var pie = d3.pie()
+                    .sort(null)
+                    .value(function(d) {
+                        return d.percentage;
+                    });
+
+                var svg = d3.select('#pie-chart')
+                    .append("g")
+                    .attr("transform", "translate(" + pie_height / 2 + "," + pie_width / 2 + ")");
+
+                var g = svg.selectAll(".arc")
+                    .data(pie(pie_data))
+                    .enter().append("g");
+
+                g.append("path")
+                    .attr("d", arc)
+                    .style("fill", function(d,i) {
+                        return d.data.color;
+                    });
+
+                g.append("text")
+                    .attr("transform", function(d) {
+                        var _d = arc.centroid(d);
+                        _d[0] *= 1;	//multiply by a constant factor
+                        _d[1] *= 1;	//multiply by a constant factor
+                        return "translate(" + _d + ")";
+                    })
+                    .attr("dy", ".50em")
+                    .style("text-anchor", "middle")
+                    .text(function(d) {
+                        if(d.data.percentage < 8) {
+                            return '';
+                        }
+                        return d.data.percentage + '%';
+                    });
+
+                var sort_btn = d3.select("#btn-sort-accuracy")
+                    .html("Sort data: ascending")
+                    .attr("state", 0);
+
+                sort_btn.on("click", function(){
+                    var self = d3.select(this);
+                    var ascending = function(a,b){
+                        return a.accuracy - b.accuracy;
+                    };
+                    var descending = function(a,b){
+                        return b.accuracy - a.accuracy;
+                    };
+
+                    var state = +self.attr("state");  // + read state as integer
+                    var txt = "Sort data: ";
+                    if(state === 0){
+                        algorithm_data.sort(ascending);
+                        state = 1;
+                        txt += "descending";
+                    }else if(state === 1){
+                        algorithm_data.sort(descending);
+                        state = 0;
+                        txt += "ascending";
+                    }
+
+                    self.attr("state", state);
+                    self.html(txt);
+
+                    d3.select("#radar-chart g").remove();
+                    d3.selectAll("#algorithm-accuracy-chart g").remove();
+
+                    var pie_data = [algorithm_data];
+                    var bar_data = algorithm_data;
+
+                    RadarChart.draw("#radar-chart",  pie_data, pie_config);
+                    BarChart.draw("#algorithm-accuracy-chart", bar_data, bar_config);
+                });
+
+
+                d3.select("#algorithm_selector").on("change",function () {
+                    var selector=document.getElementById("algorithm_selector");
+                    var algorithm = selector.options[selector.selectedIndex].value;
+                    var algorithm_data = data[algorithm.toLowerCase()];     // data for select algorithm
+                    -                    console.log(algorithm_data);
+
+                    var pie_data = [algorithm_data];
+                    var bar_data = algorithm_data;
+
+                    d3.select("#radar-chart g").remove();
+                    d3.selectAll("#algorithm-accuracy-chart g").remove();
+
+                    RadarChart.draw("#radar-chart",  pie_data, pie_config);
+
+                    BarChart.draw("#algorithm-accuracy-chart",bar_data, bar_config);
+
+                    sort_btn.on("click", function(){
+                        var self = d3.select(this);
+                        var ascending = function(a,b){
+                            return a.accuracy - b.accuracy;
+                        };
+                        var descending = function(a,b){
+                            return b.accuracy - a.accuracy;
+                        };
+
+                        var state = +self.attr("state");  // + read state as integer
+                        var txt = "Sort data: ";
+                        if(state === 0){
+                            algorithm_data.sort(ascending);
+                            state = 1;
+                            txt += "descending";
+                        }else if(state === 1){
+                            algorithm_data.sort(descending);
+                            state = 0;
+                            txt += "ascending";
+                        }
+
+                        self.attr("state", state);
+                        self.html(txt);
+
+                        d3.select("#radar-chart g").remove();
+                        d3.selectAll("#algorithm-accuracy-chart g").remove();
+
+                        var pie_data = [algorithm_data];
+                        var bar_data = algorithm_data;
+
+                        RadarChart.draw("#radar-chart",  pie_data, pie_config);
+                        BarChart.draw("#algorithm-accuracy-chart", bar_data, bar_config);
+                    });
+                });
+            }});
+
+        {#                {% include "webpages/machine_learning/accuracy_bar_chart.html" %}#}
+    {% endblock %}
+</script>
+
+<!--added by Bruce Lee-->
+{% block extra_script %}
+    {#    <script src="/static/js/ml/prediction-chart.js"></script>#}
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base/base.html" %}
+
+{% block style %}
+    h2.title
+    {
+    margin:0px;
+    padding-left:15px;
+    border:0px;
+    position:fixed;
+    top:5px;
+    color:white;
+    }
+
+    .panel-heading
+    {
+    font-size:20px;
+    text-align:center;
+    height: 80px;
+    }
+
+    .panel-footer
+    {
+    font-size:30px;
+    }
+
+    .panel-body
+    {
+    background-color:#2b313a;
+    color:white;
+    border-bottom: 1px solid gray;
+    }
+
+    .picture
+    {
+    width:990px;
+    height:348px;
+    margin-left:-30px;
+
+    background-color:#2b313a;
+    }
+
+    {#    .data61-1#}
+    {#    {#}
+    {#         max-width:60%;#}
+    {#         max-height:100%;#}
+    {#         float:left;#}
+    {#    }#}
+    {##}
+    {#    .data61-2#}
+    {#    {#}
+    {#         max-width:40%;#}
+    {#         max-height:100%;#}
+    {#         float:left;#}
+    {##}
+    {#    }#}
+
+    img {
+    height:100%;
+    width:100%;
+    }
+
+{% endblock %}
+
+
+{% block main %}
+    <div class="row" id="heading">
+        <div class="page-header">
+            <h2 class="title">Dashboard</h2>
+            <div class="pull-right"><form action="{% url 'dashboard' %}" method="POST">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-default" value="Data Pre-processing"/>
+            </form></div>
+            </div>
+
+            </div>
+
+            <div class="row" id="body">
+                <div class="panel-body">
+                    CRISO'S DATA 61 - Australia's Leading Digital Innovation Network
+                </div>
+            </div>
+
+            <div class="row" id="body">
+                <div class="panel-body">
+                    Objective: Develop A System To Visually Present ML Process With A Focus On ML Performance.
+                </div>
+            </div>
+
+            <div class="picture">
+                <img src="static/images/data61.png" alt="data61" />
+            </div>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,684 @@
+{% extends "base/base.html" %}
+
+<style>
+    {% block style %}
+        .axis .domain {
+            display: none;
+        }
+
+         .center {
+            margin-top:0px;
+            border-bottom: 1px solid lightgray;
+            margin-left: 0px;
+        }
+    {% endblock %}
+
+
+</style>
+
+{% block main %}
+    </head>
+
+    <body>
+
+    <div class="row" id="EFC">
+        <div>
+            <h1 class="center">Data Trend Chart</h1>
+        </div>
+    </div>
+
+        <div class="row">
+
+          <div class="col-xs-9" style="padding: 5px;">
+               <svg width="800" height="430" id="chart" ></svg>
+          </div>
+
+          <div class="col-xs-3 navbar-right pull-right" style="padding-left: 10px; width: 200px;">
+            <h5>Filter</h5>
+            <form id="form1">
+            <select class="form-control" name= "Filter" id="select1" >
+              <option  type="material" >Material</option>
+              <option type="diameter" >Diameter</option>
+            </select>
+           </form>
+           <h5>     </h5>
+           <div>
+                <button id="btn-sort" material="0" class="btn btn-default">Sort data: ascending</button>
+           </div>
+          </div>
+        </div>
+    </body>
+
+{% endblock %}
+
+<script>
+    {% block script %}
+
+        var endpoint = "../../api/RawData/data-trend/";
+
+        $.ajax({
+            method: "GET",
+            url: endpoint,
+
+            success: function (data) {
+
+            var margin = {top: 30, right: 20, bottom: 50, left: 100},
+                width = parseInt(d3.select("#chart").style("width")) - margin.left - margin.right,
+                height = parseInt(d3.select("#chart").style("height")) - margin.top - margin.bottom;
+
+            var x = d3.scaleBand()
+                .rangeRound([0, width])
+                .paddingInner(0.05)
+                .align(0.1);
+
+            var y = d3.scaleLinear()
+                .rangeRound([height, 0]);
+
+            var z = d3.scaleOrdinal()
+                .range(["#B40486"]);
+
+            var yAxis = d3.axisLeft(y)
+
+            var xAxis = d3.axisBottom(x)
+
+            var sort_btn = d3.select("#btn-sort")
+                .html("Sort data: ascending")
+                .attr("state", 0);
+
+            var svg = d3.select("#chart")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+             .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Read data
+  d3.json(endpoint, function (data1) {
+      //Select the data needed
+       var counts = {};
+     data1.forEach(function(r) {
+     if(r.has_failed == 1){
+
+     var key = r.material ;
+     if (!counts[key]) {
+        counts[key] = {
+           material: r.material,
+           count: 0
+        };
+     }
+        counts[key].count++;
+     }
+
+     });
+
+         var data = [];
+         Object.keys(counts).forEach(function(key) {
+            data.push(counts[key]);
+         });
+         console.log(counts)
+           console.log(data)
+
+        function draw_graph(){
+
+            var keys = []
+            for (key in data[0]){
+              if (key == "count"){
+                  keys.push(key);
+              }
+            }
+         x.domain(data.map(function(d) { return d.material; }));
+         y.domain([0, d3.max(data, function(d) {return d.count;})]).nice();
+         z.domain(keys);
+
+         svg.append("g")
+           .selectAll("g")
+           .data(d3.stack().keys(keys)(data))
+           .enter().append("g")
+           .attr("fill", function(d) {
+             return z(d.key);
+           })
+           .selectAll("rect")
+           .data(function(d) {
+             return d;
+           })
+           .enter().append("rect")
+              .attr("x", function(d) { return x(d.data.material);})
+              .attr("y", function(d) { return y(d[1]);})
+              .attr("height", function(d) {return y(d[0]) - y(d[1]);})
+              .attr("width", x.bandwidth())
+
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 2)
+              .attr("y",15)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(-90)")
+              .text("Total Failure Count");
+
+          svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 350)
+              .attr("y",210)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              //.attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(0)")
+              .text("Type of Part");
+
+        //add x axis and y axis
+         svg.append("g")
+             .classed("yAxis", true)
+             .attr("transform", "translate(0,0)")
+             .call(yAxis);
+
+
+         svg.append("g")
+             .classed("xAxis", true)
+             .attr("transform", "translate(" + 0 + "," + height + ")")
+             .call(xAxis)
+       };
+
+ document.getElementById("select1").onchange =function Filter_Selected () {
+
+  function Diameter_Selected(){
+
+    var z = d3.scaleOrdinal()
+                .range(["#ff8c00"]);
+     d3.selectAll("svg > *").remove();
+     //Select the data needed
+     var counts = {};
+     data1.forEach(function(r) {
+     if(r.has_failed == 1){ 
+     var key = r.diameter ;
+     if (!counts[key]) {
+        counts[key] = {
+           diameter: r.diameter,
+           count: 0
+        };
+     }
+        counts[key].count++;
+      }
+     });
+
+     var data = [];
+     Object.keys(counts).forEach(function(key) {
+        data.push(counts[key]);
+     });
+           console.log(counts)
+           console.log(data)
+    //-----------------------------------------------
+            var keys = []
+            for (key in data[0]){
+              if (key == "count"){
+                  keys.push(key);
+              }
+            }
+         var svg = d3.select("#chart")
+                     .attr("width", width + margin.left + margin.right)
+                     .attr("height", height + margin.top + margin.bottom)
+                   .append("g")
+                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+         x.domain(data.map(function(d) { return d.diameter; }));
+         y.domain([0, d3.max(data, function(d) {return d.count;})]).nice();
+         z.domain(keys);
+
+         svg.append("g")
+           .selectAll("g")
+           .data(d3.stack().keys(keys)(data))
+           .enter().append("g")
+           .attr("fill", function(d) {
+             return z(d.key);
+           })
+           .selectAll("rect")
+           .data(function(d) {
+             return d;
+           })
+           .enter().append("rect")
+              .attr("x", function(d) { return x(d.data.diameter);})
+              .attr("y", function(d) { return y(d[1]);})
+              .attr("height", function(d) {return y(d[0]) - y(d[1]);})
+              .attr("width", x.bandwidth())
+              .text(function(d){ return d.count; })
+
+          svg.append("g")
+           .attr("class", "axis")
+           .attr("transform", "translate(0," + height + ")")
+           .call(d3.axisBottom(x))
+
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 2)
+              .attr("y",15)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(-90)")
+              .text("Total Failure Count");
+          
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 350)
+              .attr("y",210)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              //.attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(0)")
+              .text("Diameter of Part");
+          //add x axis and y axis
+         svg.append("g")
+             .classed("yAxis", true)
+             .attr("transform", "translate(0,0)")
+             .call(yAxis);
+
+        svg.append("g")
+             .classed("xAxis", true)
+             .attr("transform", "translate(" + 0 + "," + height + ")")
+             .call(xAxis);
+             }
+
+
+ function Material_Selected(){
+    d3.selectAll("svg > *").remove();
+    //Select the data needed
+     var counts = {};
+     data1.forEach(function(r) {
+     if(r.has_failed == 1){
+
+     var key = r.material ;
+     if (!counts[key]) {
+        counts[key] = {
+           material: r.material,
+           count: 0
+        };
+     }
+        counts[key].count++;
+     }
+     
+
+     });
+
+     var data = [];
+     Object.keys(counts).forEach(function(key) {
+        data.push(counts[key]);
+     });
+           console.log(counts)
+           console.log(data)
+
+            var keys = []
+            for (key in data[0]){
+              if (key == "count"){
+                  keys.push(key);
+              }
+            }
+         var svg = d3.select("#chart")
+                     .attr("width", width + margin.left + margin.right)
+                     .attr("height", height + margin.top + margin.bottom)
+                   .append("g")
+                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+         x.domain(data.map(function(d) { return d.material; }));
+         y.domain([0, d3.max(data, function(d) {return d.count;})]).nice();
+         z.domain(keys);
+
+         svg.append("g")
+           .selectAll("g")
+           .data(d3.stack().keys(keys)(data))
+           .enter().append("g")
+           .attr("fill", function(d) {
+             return z(d.key);
+           })
+           .selectAll("rect")
+           .data(function(d) {
+             return d;
+           })
+           .enter().append("rect")
+              .attr("x", function(d) { return x(d.data.material);})
+              .attr("y", function(d) { return y(d[1]);})
+              .attr("height", function(d) {return y(d[0]) - y(d[1]);})
+              .attr("width", x.bandwidth())
+              .text(function(d){ return d.count; })
+
+          svg.append("g")
+           .attr("class", "axis")
+           .attr("transform", "translate(0," + height + ")")
+           .call(d3.axisBottom(x))
+
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 2)
+              .attr("y",15)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(-90)")
+              .text("Total Failure Count");
+
+           svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 350)
+              .attr("y",210)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              //.attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(0)")
+              .text("Type of Part");
+
+          //add x axis and y axis
+         svg.append("g")
+             .classed("yAxis", true)
+             .attr("transform", "translate(0,0)")
+             .call(yAxis);
+         svg.append("g")
+             .classed("xAxis", true)
+             .attr("transform", "translate(" + 0 + "," + height + ")")
+             .call(xAxis);
+      }
+     //-----------------------------
+
+     
+     //-----------------------------
+
+     //Link selections
+     var e = document.getElementById("form1");
+     var selected_value = document.forms['form1'].elements['Filter'].options[document.forms['form1']
+                 .elements['Filter'].selectedIndex].getAttribute('type');
+     console.log(selected_value)
+
+     if(selected_value == "diameter"){
+          Diameter_Selected.call(svg, {
+             data:data
+          });
+     }else if(selected_value=="material"){
+         Material_Selected.call(svg, {
+             data:data
+          });
+     }
+}
+
+
+
+sort_btn.on("click", function(){
+     d3.selectAll("svg > *").remove();
+     //Check which graph is currently used
+     var e = document.getElementById("form1");
+     var selected_value = document.forms['form1'].elements['Filter'].options[document.forms['form1']
+                 .elements['Filter'].selectedIndex].getAttribute('type');
+     console.log(selected_value)
+
+  if(selected_value == "diameter"){
+     var z = d3.scaleOrdinal()
+                .range(["#ff8c00"]);
+      var counts = {};
+     data1.forEach(function(r) {
+     if(r.has_failed == 1){ 
+     var key = r.diameter ;
+     if (!counts[key]) {
+        counts[key] = {
+           diameter: r.diameter,
+           count: 0
+        };
+     }
+        counts[key].count++;
+      }
+     });
+
+     var data = [];
+     Object.keys(counts).forEach(function(key) {
+        data.push(counts[key]);
+     });
+           console.log(counts)
+           console.log(data)
+
+          var keys = []
+               for (key in data[0]){
+                 if (key == "count"){
+                    keys.push(key);
+                }
+               }
+
+               var svg = d3.select("#chart")
+                     .attr("width", width + margin.left + margin.right)
+                     .attr("height", height + margin.top + margin.bottom)
+                   .append("g")
+                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+               var self = d3.select(this);
+               var state = +self.attr("state");
+               var txt = "Sort data: ";
+               if(state === 0){
+                         data.sort(function(a, b) {
+                           return a.count - b.count;
+                         });
+                         state = 1;
+                         txt += "descending";
+                     } else if(state === 1){
+                          //data.sort(descending);
+                          data.sort(function(a, b) {
+                            return b.count - a.count;
+                          });
+                          state = 0;
+                          txt += "ascending";
+                     }
+
+         x.domain(data.map(function(d) { return d.diameter; }));
+         y.domain([0, d3.max(data, function(d) {return d.count;})]).nice();
+         z.domain(keys);
+
+         svg.append("g")
+           .selectAll("g")
+           .data(d3.stack().keys(keys)(data))
+           .enter().append("g")
+           .attr("fill", function(d) {
+             return z(d.key);
+           })
+           .selectAll("rect")
+           .data(function(d) {
+             return d;
+           })
+           .enter().append("rect")
+              .attr("x", function(d) { return x(d.data.diameter);})
+              .attr("y", function(d) { return y(d[1]);})
+              .attr("height", function(d) {return y(d[0]) - y(d[1]);})
+              .attr("width", x.bandwidth())
+
+          svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(0," + height + ")")
+               .call(d3.axisBottom(x))
+
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 2)
+              .attr("y",15)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(-90)")
+              .text("Total Failure Count");
+         
+           svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 350)
+              .attr("y",210)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              //.attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(0)")
+              .text("Diameter of Part");
+
+          //add x axis and y axis
+         svg.append("g")
+             .classed("yAxis", true)
+             .attr("transform", "translate(0,0)")
+             .call(yAxis);
+
+         svg.append("g")
+             .classed("xAxis", true)
+             .attr("transform", "translate(" + 0 + "," + height + ")")
+             .call(xAxis);
+
+                     self.attr("state", state);
+                     self.html(txt);
+     }
+     else if(selected_value=="material"){
+      var z = d3.scaleOrdinal()
+                .range(["#B40486"]);
+        var counts = {};
+      data1.forEach(function(r) {
+     if(r.has_failed == 1){
+
+     var key = r.material ;
+     if (!counts[key]) {
+        counts[key] = {
+           material: r.material,
+           count: 0
+        };
+     }
+        counts[key].count++;
+     }
+     
+
+     });
+
+     var data = [];
+     Object.keys(counts).forEach(function(key) {
+        data.push(counts[key]);
+     });
+
+        var keys = []
+               for (key in data[0]){
+                 if (key == "count"){
+                    keys.push(key);
+                }
+               }
+
+               var svg = d3.select("#chart")
+                     .attr("width", width + margin.left + margin.right)
+                     .attr("height", height + margin.top + margin.bottom)
+                   .append("g")
+                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+               var self = d3.select(this);
+               var state = +self.attr("state");
+               var txt = "Sort data: ";
+               if(state === 0){
+                         data.sort(function(a, b) {
+                           return a.count - b.count;
+                         });
+                         state = 1;
+                         txt += "descending";
+                     } else if(state === 1){
+                          //data.sort(descending);
+                          data.sort(function(a, b) {
+                            return b.count - a.count;
+                          });
+                          state = 0;
+                          txt += "ascending";
+                     }
+
+         x.domain(data.map(function(d) { return d.material; }));
+         y.domain([0, d3.max(data, function(d) {return d.count;})]).nice();
+         z.domain(keys);
+
+         svg.append("g")
+           .selectAll("g")
+           .data(d3.stack().keys(keys)(data))
+           .enter().append("g")
+           .attr("fill", function(d) {
+             return z(d.key);
+           })
+           .selectAll("rect")
+           .data(function(d) {
+             return d;
+           })
+           .enter().append("rect")
+              .attr("x", function(d) { return x(d.data.material);})
+              .attr("y", function(d) { return y(d[1]);})
+              .attr("height", function(d) {return y(d[0]) - y(d[1]);})
+              .attr("width", x.bandwidth())
+
+          svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(0," + height + ")")
+               .call(d3.axisBottom(x))
+
+         svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 2)
+              .attr("y",15)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(-90)")
+              .text("Total Failure Count");
+         
+          svg.append("g")
+             .attr("class", "axis")
+             //.call(d3.axisLeft(y).ticks(null, "s"))
+           .append("text")
+              .attr("x", 350)
+              .attr("y",210)
+              .attr("dy", "0.32em")
+              .attr("fill", "#000")
+              .attr("font-weight", "bold")
+              //.attr("text-anchor", "middle")
+              .attr("transform", "translate(-80," + height/2 + ") rotate(0)")
+              .text("Type of Part");
+          //add x axis and y axis
+         svg.append("g")
+             .classed("yAxis", true)
+             .attr("transform", "translate(0,0)")
+             .call(yAxis);
+
+         svg.append("g")
+             .classed("xAxis", true)
+             .attr("transform", "translate(" + 0 + "," + height + ")")
+             .call(xAxis);
+                     self.attr("state", state);
+                     self.html(txt);
+     }
+               });
+
+         draw_graph.call(svg, {
+             data:data
+          });
+       });
+}});
+    {% endblock %}
+</script>
+
+
+{% block extra_script %}
+    <script>
+
+    </script>
+{% endblock %}
