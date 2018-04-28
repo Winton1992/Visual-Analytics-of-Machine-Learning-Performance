@@ -9,12 +9,11 @@ has an environment that meets the following requirements
 * Python 3.6
 * Chrome Browser
 
-1. First clone this repository into a local directory using mercurial (hg).
+1. First clone this repository into a local directory using git.
 
 ```
-$ sudo apt install mercurial
-$ hg clone https://<bitbucketUserName>@bitbucket.org/will404/comp5615
-$ cd comp5615
+$ git clone https://github.com/Winton1992/Visual-Analytics-of-Machine-Learning-Performance.git
+$ cd Visual-Analytics-of-Machine-Learning-Performance
 ```
 
 2. Activate a python3.6 interpreter in the current terminal window.
@@ -61,3 +60,6 @@ file in the root directory.
 Please refer to the documentation here:
 https://docs.djangoproject.com/en/1.11/howto/deployment/
 
+<img src="Pic/01.png" alt="alt text" width="50%" height="50%"><img src="Pic/02.png" alt="alt text" width="50%" height="50%">
+<img src="Pic/03.png" alt="alt text" width="50%" height="50%"><img src="Pic/04.png" alt="alt text" width="50%" height="50%">
+<img src="Pic/05.png" alt="alt text" width="50%" height="50%"><img src="Pic/06.png" alt="alt text" width="50%" height="50%">
