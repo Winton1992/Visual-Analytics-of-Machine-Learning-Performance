@@ -1,4 +1,6 @@
-# README #
+## Visual Analytics of Machine Learning Performance (CSIRO Project) ##
+
+More Details from Original Repository in Bitbucket: https://bitbucket.org/will404/comp5615/wiki/Home
 
 ### Setup ###
 
